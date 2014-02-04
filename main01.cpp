@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <iostream>
+#include <cmath>
 
 #include "GL/glew.h"
 
@@ -114,6 +115,7 @@ float rotate_x = 0.0, rotate_y = 0.0;
 float move_x = 0.0, move_y = 0.0;
 float win_width = 128.0, win_height = 128.0;
 float translate_z = -1.0;
+bool moving = false, rotating = false, zooming = false;
 /////////////////////////////////////////////////
 
 
@@ -140,7 +142,8 @@ void changeSize(int w, int h)
 	glMatrixMode(GL_MODELVIEW);
 	/////////////////////////////////////////////////
 	//Exercise 1 TODO: add scene interaction code here
-
+	win_width = w;
+	win_height = h;
 	/////////////////////////////////////////////////
 }
 
@@ -159,6 +162,15 @@ void renderScene(void)
 	// use glTranslatef and glRotatef
 	//e.g.,
 	glTranslatef(0.0, 0.0, translate_z);
+	glTranslatef(move_x, move_y, 0.0);
+	// glRotatef(rotate_x, cos(M_PI*rotate_y/180), 0.0, -sin(M_PI*rotate_y/180));
+	// glRotatef(rotate_y, 0.0, cos(M_PI*rotate_x/180), -sin(M_PI*rotate_x/180));
+	glRotatef(rotate_x, 1.0, 0.0, 0.0);
+        glRotatef(rotate_y, 0.0, 1.0, 0.0);
+	// glRotatef(rotate_x, cos(M_PI*rotate_y/180), 0.0, -sin(M_PI*rotate_y/180));
+	// glRotatef(rotate_y, 0.0, cos(M_PI*rotate_x/180), -sin(M_PI*rotate_x/180));
+	// glRotatef(rotate_x, 1.0, 0.0, 0.0);
+        // glRotatef(rotate_y, 0.0, 1.0, 0.0);
 	/////////////////////////////////////////////////
 	glutSolidTeapot(0.5);
 
@@ -182,7 +194,43 @@ void mouseClick(int button, int state, int x, int y)
 	//Exercise 1 TODO: add scene interaction code here
 	// use GLUT_UP and GLUT_DOWN to evaluate the current
 	// "state" of the mouse.
+  switch(button)
+    {
+    case GLUT_LEFT_BUTTON:
+      if(state == GLUT_DOWN)
+	{
+	  rotating = true;
+	  mouse_old_x = x;
+	  mouse_old_y = y;
+	}
+      else rotating = false;
+      break;
 
+    case GLUT_RIGHT_BUTTON:
+      if(state == GLUT_DOWN)
+	{
+	  zooming = true;
+	  mouse_old_x = x;
+	  mouse_old_y = y;
+	}
+      else zooming = false;
+      break;
+
+    case GLUT_MIDDLE_BUTTON:
+      if(state == GLUT_DOWN)
+	{
+	  moving = true;
+	  mouse_old_x = x;
+	  mouse_old_y = y;
+	}
+      else moving = false;
+      break;
+
+    default:
+      break;
+    }
+
+      
 
 	/////////////////////////////////////////////////
 }
@@ -194,7 +242,38 @@ void mouseMotion(int x, int y)
 	// add code to handle mouse move events
 	// and calculate reasonable values for object
 	// rotations
+  const float zoom_sens = 2;
+  const float x_move_sens = 1;
+  const float y_move_sens = 1;
+  const float x_rot_sens = 1;
+  const float y_rot_sens = 1;
 
+  int dx = x - mouse_old_x;
+  int dy = y - mouse_old_y;
+
+  mouse_old_x = x;
+  mouse_old_y = y;
+  
+  // printf("%d, %d\n", dx, dy);
+  // printf("%.2f, %.2f, %.2f\n", move_x, move_y, translate_z);
+  // printf("%.2f, %.2f\n", rotate_x, rotate_y);
+
+  // printf("\t%.2f, %.2f,  %.2f\n", cos(M_PI*rotate_y/180), 0.0, -sin(M_PI*rotate_y/180));
+  // printf("\t%.2f, %.2f, %.2f\n\n", 0.0, cos(M_PI*rotate_x/180), -sin(M_PI*rotate_x/180));
+
+  if(moving)
+    {
+      move_x += x_move_sens * (1-translate_z)*dx/win_width;
+      move_y -= y_move_sens * (1-translate_z)*dy/win_height;
+    }
+  if(rotating)
+    {
+      rotate_x += x_rot_sens * dy * (1-translate_z) / 2;
+      rotate_y += y_rot_sens * dx * (1-translate_z) / 2;
+    }
+  if(zooming)
+    translate_z += zoom_sens * (translate_z-1)*dy/win_height;
+  
 	/////////////////////////////////////////////////
 }
 
