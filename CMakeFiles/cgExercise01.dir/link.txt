@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/cgExercise01.dir/main01.o  -o cgExercise01 -rdynamic -lGL -lGLU -lGLEW -lglut 

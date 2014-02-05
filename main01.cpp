@@ -111,7 +111,8 @@ GLuint tex;
 //scene interaction variables
 int mouse_old_x, mouse_old_y;
 int mouse_buttons = 0;
-float rotate_x = 0.0, rotate_y = 0.0;
+float rotate_x = 0.0, rotate_y = 0.0, rotate_composite=0.0;
+float rotate_axis_x=1.0, rotate_axis_y=0.0, rotate_axis_z=0.0;
 float move_x = 0.0, move_y = 0.0;
 float win_width = 128.0, win_height = 128.0;
 float translate_z = -1.0;
@@ -163,14 +164,9 @@ void renderScene(void)
 	//e.g.,
 	glTranslatef(0.0, 0.0, translate_z);
 	glTranslatef(move_x, move_y, 0.0);
-	// glRotatef(rotate_x, cos(M_PI*rotate_y/180), 0.0, -sin(M_PI*rotate_y/180));
-	// glRotatef(rotate_y, 0.0, cos(M_PI*rotate_x/180), -sin(M_PI*rotate_x/180));
-	glRotatef(rotate_x, 1.0, 0.0, 0.0);
-        glRotatef(rotate_y, 0.0, 1.0, 0.0);
-	// glRotatef(rotate_x, cos(M_PI*rotate_y/180), 0.0, -sin(M_PI*rotate_y/180));
-	// glRotatef(rotate_y, 0.0, cos(M_PI*rotate_x/180), -sin(M_PI*rotate_x/180));
-	// glRotatef(rotate_x, 1.0, 0.0, 0.0);
-        // glRotatef(rotate_y, 0.0, 1.0, 0.0);
+	// glRotatef(rotate_composite, rotate_axis_x, rotate_axis_y, rotate_axis_z); 
+	glRotatef(rotate_x, 1.0, 0.0, 0.0); 
+	glRotatef(rotate_y, 0.0, 1.0, 0.0); 
 	/////////////////////////////////////////////////
 	glutSolidTeapot(0.5);
 
@@ -235,6 +231,30 @@ void mouseClick(int button, int state, int x, int y)
 	/////////////////////////////////////////////////
 }
 
+// void setRotation() // unnecessary complication. Do not mark.
+// {
+//   float alpha = M_PI/180 * rotate_x; // convert to radians
+//   float beta = M_PI/180 * rotate_y;
+
+//   float q1 = sin(alpha/2)*cos(beta/2);
+//   float q2 = cos(alpha/2)*sin(beta/2);
+//   float q3 = sin(alpha/2)*sin(beta/2);
+//   float q4 = cos(alpha/2)*cos(beta/2);
+  
+//   float theta = 2*acos(q4);
+//   float denominator = sin( theta/2 );
+//   float x = q1 / denominator;
+//   float y = q2 / denominator;
+//   float z = q3 / denominator;
+
+//   printf("angle = %f, axis = (%f, %f, %f)\n", theta, x, y, z);
+
+//   rotate_composite = 180/M_PI * theta; // convert to degrees
+//   rotate_axis_x = 180/M_PI * x;
+//   rotate_axis_y = 180/M_PI * y;
+//   rotate_axis_z = 180/M_PI * z;
+// }
+
 void mouseMotion(int x, int y)
 {
 	/////////////////////////////////////////////////
@@ -242,9 +262,9 @@ void mouseMotion(int x, int y)
 	// add code to handle mouse move events
 	// and calculate reasonable values for object
 	// rotations
-  const float zoom_sens = 2;
-  const float x_move_sens = 1;
-  const float y_move_sens = 1;
+  const float zoom_sens = 1.0;
+  const float x_move_sens = 0.85;
+  const float y_move_sens = 0.85;
   const float x_rot_sens = 1;
   const float y_rot_sens = 1;
 
@@ -253,6 +273,8 @@ void mouseMotion(int x, int y)
 
   mouse_old_x = x;
   mouse_old_y = y;
+
+  float depth = 1-translate_z;
   
   // printf("%d, %d\n", dx, dy);
   // printf("%.2f, %.2f, %.2f\n", move_x, move_y, translate_z);
@@ -263,16 +285,21 @@ void mouseMotion(int x, int y)
 
   if(moving)
     {
-      move_x += x_move_sens * (1-translate_z)*dx/win_width;
-      move_y -= y_move_sens * (1-translate_z)*dy/win_height;
+      move_x += x_move_sens * depth * dx / win_height; // viewport width seems to follow window height
+      move_y -= y_move_sens * depth * dy / win_height;
+      // printf("(%d, %d) -> (%.2f, %.2f, %.2f)\n", x, y, move_x, move_y, translate_z);
     }
   if(rotating)
     {
-      rotate_x += x_rot_sens * dy * (1-translate_z) / 2;
-      rotate_y += y_rot_sens * dx * (1-translate_z) / 2;
+      rotate_x += x_rot_sens * dy * depth / 2;
+      rotate_y += y_rot_sens * dx * depth / 2;
+
+      rotate_x = std::max(std::min(90.0f, rotate_x), -90.0f);
+
+      // setRotation();
     }
   if(zooming)
-    translate_z += zoom_sens * (translate_z-1)*dy/win_height;
+    translate_z -= zoom_sens * depth * dy /win_height;
   
 	/////////////////////////////////////////////////
 }

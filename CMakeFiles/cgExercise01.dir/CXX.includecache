@@ -1,0 +1,40 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/homes/jbh111/graphics/Coursework 1/cgcoursework/main01.cpp
+stdio.h
+-
+string.h
+-
+stdlib.h
+-
+iostream
+-
+cmath
+-
+GL/glew.h
+/homes/jbh111/graphics/Coursework 1/cgcoursework/GL/glew.h
+GL/glut.h
+-
+sys/time.h
+-
+stdio.h
+-
+unistd.h
+-
+glut.h
+-
+sys/time.h
+-
+stdio.h
+-
+unistd.h
+-
+GL/glut.h
+/homes/jbh111/graphics/Coursework 1/cgcoursework/GL/glut.h
+
