@@ -263,8 +263,8 @@ void mouseMotion(int x, int y)
 	// and calculate reasonable values for object
 	// rotations
   const float zoom_sens = 1.0;
-  const float x_move_sens = 0.85;
-  const float y_move_sens = 0.85;
+  const float x_move_sens = 1.0;
+  const float y_move_sens = 1.0;
   const float x_rot_sens = 1;
   const float y_rot_sens = 1;
 
@@ -275,24 +275,19 @@ void mouseMotion(int x, int y)
   mouse_old_y = y;
 
   float depth = 1-translate_z;
-  
-  // printf("%d, %d\n", dx, dy);
-  // printf("%.2f, %.2f, %.2f\n", move_x, move_y, translate_z);
-  // printf("%.2f, %.2f\n", rotate_x, rotate_y);
-
-  // printf("\t%.2f, %.2f,  %.2f\n", cos(M_PI*rotate_y/180), 0.0, -sin(M_PI*rotate_y/180));
-  // printf("\t%.2f, %.2f, %.2f\n\n", 0.0, cos(M_PI*rotate_x/180), -sin(M_PI*rotate_x/180));
+  float pan_ratio = 2*(sqrt(2)-1)*depth/win_height; // convert from screen units to world units
+  float rot_ratio = pan_ratio*180; // convert screen distance to world angle --- 1 world unit -> 180 degrees
 
   if(moving)
     {
-      move_x += x_move_sens * depth * dx / win_height; // viewport width seems to follow window height
-      move_y -= y_move_sens * depth * dy / win_height;
-      // printf("(%d, %d) -> (%.2f, %.2f, %.2f)\n", x, y, move_x, move_y, translate_z);
+      
+      move_x += x_move_sens * pan_ratio * dx;
+      move_y -= y_move_sens * pan_ratio * dy;
     }
   if(rotating)
     {
-      rotate_x += x_rot_sens * dy * depth / 2;
-      rotate_y += y_rot_sens * dx * depth / 2;
+      rotate_x += x_rot_sens * rot_ratio * dy;
+      rotate_y += y_rot_sens * rot_ratio * dx;
 
       rotate_x = std::max(std::min(90.0f, rotate_x), -90.0f);
 
